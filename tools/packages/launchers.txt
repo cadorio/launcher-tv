@@ -1,0 +1,5 @@
+# Launchers de fábrica. Só desative DEPOIS que o Launcher TV for a tela inicial;
+# algumas TVs voltam para o launcher original a cada reinício se ele continuar ativo.
+com.google.android.apps.tv.launcherx          # Tela inicial do Google TV (com anúncios)
+com.google.android.tvlauncher                 # Tela inicial do Android TV
+com.google.android.leanbacklauncher           # Tela inicial antiga do Android TV

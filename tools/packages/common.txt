@@ -1,0 +1,9 @@
+# Pacotes que podem ser desativados com segurança na maioria das TVs Android / Google TV.
+# Formato: nome.do.pacote  # descrição
+# Nada é desinstalado: o script usa "pm disable-user" e o restore.sh desfaz tudo.
+com.google.android.tvrecommendations          # Fileiras de recomendações/anúncios do Google
+com.google.android.leanbacklauncher.recommendations  # Recomendações do launcher antigo do Android TV
+com.google.android.feedback                   # Envio de feedback/telemetria ao Google
+com.google.android.play.games                 # Google Play Games
+com.google.android.videos                     # Google TV / Play Filmes (loja de filmes)
+com.netflix.partner.activation                # Ativação de parceria Netflix (não é o app Netflix)

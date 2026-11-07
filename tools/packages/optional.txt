@@ -1,0 +1,4 @@
+# Opcionais: só desative se você NÃO usa estes recursos.
+com.google.android.katniss                    # Google Assistente / busca por voz
+com.google.android.apps.mediashell            # Chromecast integrado
+com.google.android.tungsten.overscan          # Ajuste de overscan (raramente usado)
