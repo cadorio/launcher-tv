@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=1920, height=1080">
+    <title>Launcher TV</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<main id="page">
+    <header>
+        <div>
+            <div id="clock"></div>
+            <div id="date"></div>
+        </div>
+        <button id="settings" class="focusable" aria-label="Ajustes">⚙</button>
+    </header>
+
+    <h2 data-i18n="favorites"></h2>
+    <div id="favorites" class="row"></div>
+    <p id="empty-favorites" data-i18n="emptyFavorites"></p>
+
+    <h2 data-i18n="allApps"></h2>
+    <div id="grid"></div>
+</main>
+
+    <footer data-i18n="hint"></footer>
+
+    <div id="menu" hidden>
+        <div class="menu-box">
+            <h3 id="menu-title"></h3>
+            <div id="menu-items"></div>
+        </div>
+    </div>
+    <div id="toast" hidden></div>
+
+    <script src="js/main.js"></script>
+</body>
+</html>

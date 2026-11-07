@@ -1,0 +1,79 @@
+/* Layout fixo em 1920x1080: é a resolução lógica de todas as TVs Samsung com Tizen. */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+    width: 1920px;
+    height: 1080px;
+    overflow: hidden;
+    background: linear-gradient(180deg, #1b2433 0%, #07090d 100%);
+    color: #fff;
+    font-family: "SamsungOne", "Tizen Sans", "Roboto", sans-serif;
+}
+
+/* A página rola por código (scrollTop): o controle não tem roda de rolagem. */
+#page { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; overflow: hidden; padding: 72px 112px 0; }
+
+header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+#clock { font-size: 112px; font-weight: 200; line-height: 1; }
+#date { font-size: 36px; color: rgba(255, 255, 255, .7); margin-top: 8px; }
+
+#settings {
+    width: 104px; height: 104px; border-radius: 28px; border: 0;
+    background: rgba(255, 255, 255, .2); color: #fff; font-size: 56px;
+}
+
+h2 { font-size: 40px; font-weight: 500; color: rgba(255, 255, 255, .7); margin: 16px 0 28px; }
+
+.row { display: flex; }
+.row .tile { margin-right: 44px; }
+#favorites { margin-bottom: 36px; position: relative; transition: transform .2s ease-out; }
+#empty-favorites { font-size: 30px; color: rgba(255, 255, 255, .7); margin-bottom: 40px; }
+#empty-favorites[hidden] { display: none; }
+
+/* 6 colunas: (1696 - 5 * 44) / 6 = 246px. Sem CSS grid nem gap: o Tizen 3/4 usa Chromium 47-56. */
+#grid { display: flex; flex-wrap: wrap; padding-bottom: 180px; }
+#grid .tile { width: 246px; height: 138px; margin: 0 44px 36px 0; }
+#grid .tile:nth-child(6n) { margin-right: 0; }
+
+.tile {
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    border-radius: 28px;
+    background: rgba(255, 255, 255, .2);
+    transition: transform .15s ease-out, box-shadow .15s ease-out;
+}
+#favorites .tile { width: 384px; height: 216px; flex: none; }
+.tile img { width: 40%; height: auto; max-height: 50%; object-fit: contain; }
+.tile .name {
+    margin-top: 12px; max-width: 90%;
+    font-size: 26px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#favorites .tile .name { font-size: 30px; }
+
+.focusable { outline: none; }
+.focusable.focused {
+    -webkit-transform: scale(1.1); transform: scale(1.1);
+    box-shadow: 0 0 0 6px #fff, 0 24px 48px rgba(0, 0, 0, .5);
+    z-index: 2;
+}
+
+footer {
+    position: fixed; left: 0; right: 0; bottom: 0; padding: 28px 112px;
+    font-size: 26px; color: rgba(255, 255, 255, .6);
+    background: linear-gradient(0deg, rgba(0, 0, 0, .8), transparent);
+}
+
+#menu {
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center;
+    background: rgba(0, 0, 0, .6); z-index: 10;
+}
+#menu[hidden], #toast[hidden] { display: none; }
+.menu-box { min-width: 760px; padding: 48px; border-radius: 36px; background: #222b3a; }
+#menu-title { font-size: 40px; margin-bottom: 28px; }
+.menu-item { font-size: 34px; padding: 22px 32px; border-radius: 18px; }
+.menu-item.focused { background: #fff; color: #111; transform: none; box-shadow: none; }
+
+#toast {
+    position: fixed; left: 50%; bottom: 120px; -webkit-transform: translateX(-50%); transform: translateX(-50%);
+    padding: 24px 40px; border-radius: 20px; font-size: 30px; background: rgba(0, 0, 0, .85); z-index: 20;
+}
