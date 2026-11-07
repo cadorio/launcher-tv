@@ -27,9 +27,15 @@ daqui foi escrito do zero.
 |---|---|---|
 | ![Grade com todos os apps e o item em foco ampliado](docs/screenshots/apps.jpg) | ![Menu com mover, remover dos favoritos e ocultar](docs/screenshots/options.jpg) | ![Menu de ajustes do launcher](docs/screenshots/settings.jpg) |
 
-<sub>Capturas da versão Samsung/LG rodando no navegador em modo demonstração (por isso os apps
-aparecem com a inicial no lugar do ícone). Na TV aparecem os ícones reais; no Android, os banners
-dos apps e a fileira "Entradas".</sub>
+**Temas** (⚙ → Tema, Tamanho dos blocos, Cantos):
+
+| Claro | Aurora, blocos grandes | Preto (OLED), blocos pequenos e cantos retos |
+|---|---|---|
+| ![Tema claro](docs/screenshots/theme-light.jpg) | ![Tema Aurora com blocos grandes](docs/screenshots/theme-aurora.jpg) | ![Tema preto para telas OLED, blocos pequenos](docs/screenshots/theme-oled.jpg) |
+
+<sub>Capturas da versão Samsung/LG rodando no navegador em modo demonstração: fora da TV não há
+apps instalados, então eles aparecem com a inicial colorida. Na TV aparecem os ícones reais
+(e, no Android, os banners dos apps e a fileira "Entradas").</sub>
 
 ## O que vem no launcher
 
@@ -38,7 +44,9 @@ dos apps e a fileira "Entradas".</sub>
 | Favoritos | Segure **OK** (ou aperte **Menu**) num app → *Fixar nos favoritos*. Na fileira de favoritos, o mesmo menu move o app para a esquerda/direita. |
 | Ocultar apps | Mesmo menu → *Ocultar app*. Para trazer de volta: ⚙ → *Mostrar apps ocultos*. |
 | Relógio | ⚙ → mostrar/ocultar segundos. Segue o formato 12/24 h e o idioma da TV. |
-| Fundo | ⚙ → alterna entre o gradiente próprio e o papel de parede da TV. |
+| Design | ⚙ → **Tema** (Grafite, Preto OLED, Oceano, Aurora, Floresta, Claro), **Tamanho dos blocos** (pequeno, médio, grande) e **Cantos** (arredondados ou retos). |
+| Ícones | Apps de TV mostram o banner; os outros, o ícone em alta resolução num bloco com a cor do próprio ícone. |
+| Fundo | ⚙ → alterna entre o gradiente do tema e o papel de parede da TV. |
 | Entradas | Fileira com as entradas HDMI/AV da TV (com o nome do aparelho via HDMI-CEC). ⚙ → mostrar/ocultar. |
 | Botões coloridos | **Vermelho**: opções do app em foco. **Verde**: ajustes. |
 | Voltar / Home | Na tela inicial, levam ao topo e ao primeiro favorito. |

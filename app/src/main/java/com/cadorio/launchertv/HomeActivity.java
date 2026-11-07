@@ -12,6 +12,8 @@ import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.StateListDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,7 +44,6 @@ import java.util.Locale;
  * Feita para controle remoto (D-pad): o item em foco cresce e mostra o nome.
  */
 public class HomeActivity extends Activity {
-    private static final int GRID_COLUMNS = 5;
     private static final String TAG_FAVORITE = "fav:";
     private static final String TAG_GRID = "all:";
     private static final String TAG_INPUT = "in:";
@@ -60,6 +61,10 @@ public class HomeActivity extends Activity {
     private TextView emptyFavorites;
     private TextClock clock;
     private TextClock date;
+    private ImageView settingsButton;
+    /** Textos em cor secundária (títulos, data…), recoloridos quando o tema muda. */
+    private final List<TextView> secondaryTexts = new ArrayList<>();
+    private Theme theme;
 
     private boolean dirty = true;
     private int sidePadding;
@@ -165,7 +170,7 @@ public class HomeActivity extends Activity {
 
         emptyFavorites = new TextView(this);
         emptyFavorites.setText(R.string.empty_favorites);
-        emptyFavorites.setTextColor(color(R.color.text_secondary));
+        secondaryTexts.add(emptyFavorites);
         emptyFavorites.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         emptyFavorites.setPadding(sidePadding, 0, sidePadding, dp(24));
         content.addView(emptyFavorites);
@@ -206,14 +211,13 @@ public class HomeActivity extends Activity {
         clocks.setOrientation(LinearLayout.VERTICAL);
 
         clock = new TextClock(this);
-        clock.setTextColor(color(R.color.text_primary));
         clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 56);
         clock.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
         clock.setIncludeFontPadding(false);
         clocks.addView(clock);
 
         date = new TextClock(this);
-        date.setTextColor(color(R.color.text_secondary));
+        secondaryTexts.add(date);
         date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         Locale locale = Locale.getDefault();
         String datePattern = DateFormat.getBestDateTimePattern(locale, "EEEEdMMMM");
@@ -225,7 +229,7 @@ public class HomeActivity extends Activity {
 
         ImageView settings = new ImageView(this);
         settings.setImageResource(R.drawable.ic_settings);
-        settings.setBackgroundResource(R.drawable.tile_bg);
+        settingsButton = settings;
         settings.setPadding(dp(12), dp(12), dp(12), dp(12));
         settings.setFocusable(true);
         settings.setContentDescription(getString(R.string.settings));
@@ -239,7 +243,7 @@ public class HomeActivity extends Activity {
     private TextView sectionTitle(String text) {
         TextView title = new TextView(this);
         title.setText(text);
-        title.setTextColor(color(R.color.text_secondary));
+        secondaryTexts.add(title);
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         title.setPadding(sidePadding, dp(8), sidePadding, 0);
@@ -256,14 +260,17 @@ public class HomeActivity extends Activity {
         }
         dirty = false;
         store.reload();
-        applyBackground();
+        theme = store.theme();
+        applyTheme();
         applyClockFormat();
 
         int usable = getResources().getDisplayMetrics().widthPixels - 2 * sidePadding;
         int gap = dp(22);
 
-        // Favoritos: um pouco maiores que a grade, como no Apple TV.
-        int favWidth = (usable - 4 * gap) * 10 / 42;
+        // Ajustes → Tamanho dos blocos muda as colunas da grade; os favoritos são 20% maiores.
+        int columns = Theme.SIZE_COLUMNS[store.tileSize()];
+        int gridWidth = (usable - (columns - 1) * gap) / columns;
+        int favWidth = gridWidth * 6 / 5;
         favoritesRow.removeAllViews();
         List<AppEntry> favorites = store.favorites();
         for (int i = 0; i < favorites.size(); i++) {
@@ -275,7 +282,6 @@ public class HomeActivity extends Activity {
         }
         emptyFavorites.setVisibility(favorites.isEmpty() ? View.VISIBLE : View.GONE);
 
-        int gridWidth = (usable - (GRID_COLUMNS - 1) * gap) / GRID_COLUMNS;
 
         inputsRow.removeAllViews();
         List<TvInputs.Input> inputs = store.showInputs()
@@ -283,7 +289,7 @@ public class HomeActivity extends Activity {
         for (int i = 0; i < inputs.size(); i++) {
             final TvInputs.Input input = inputs.get(i);
             Drawable icon = input.icon != null ? input.icon : getDrawableCompat(R.drawable.ic_input);
-            View cell = buildCell(TAG_INPUT + input.id, input.label, null, icon, gridWidth,
+            View cell = buildCell(TAG_INPUT + input.id, input.label, null, icon, 0, gridWidth,
                     v -> openInput(input), null);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -297,7 +303,7 @@ public class HomeActivity extends Activity {
         List<AppEntry> all = store.allVisible();
         LinearLayout row = null;
         for (int i = 0; i < all.size(); i++) {
-            if (i % GRID_COLUMNS == 0) {
+            if (i % columns == 0) {
                 row = new LinearLayout(this);
                 row.setOrientation(LinearLayout.HORIZONTAL);
                 row.setClipChildren(false);
@@ -309,7 +315,7 @@ public class HomeActivity extends Activity {
             }
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                     ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-            if (i % GRID_COLUMNS > 0) lp.leftMargin = gap;
+            if (i % columns > 0) lp.leftMargin = gap;
             row.addView(buildTile(all.get(i), TAG_GRID, gridWidth), lp);
         }
 
@@ -318,11 +324,14 @@ public class HomeActivity extends Activity {
 
     /** Um bloco 16:9 com o banner do app (ou ícone + nome) e o nome embaixo, visível no foco. */
     private View buildTile(AppEntry app, String section, int width) {
-        return buildCell(section + app.key, app.label, app.banner(pm), app.icon(pm), width,
+        Drawable banner = app.banner(pm);
+        // Sem banner: o bloco ganha a cor do próprio ícone, como um cartão do app.
+        int fill = banner == null ? app.tileColor(pm) : 0;
+        return buildCell(section + app.key, app.label, banner, app.icon(pm), fill, width,
                 v -> launch(app, v), () -> showAppOptions(app, section));
     }
 
-    private View buildCell(String tag, String text, Drawable banner, Drawable iconDrawable, int width,
+    private View buildCell(String tag, String text, Drawable banner, Drawable iconDrawable, int fill, int width,
                            View.OnClickListener onClick, Runnable onOptions) {
         int height = width * 9 / 16;
 
@@ -332,7 +341,7 @@ public class HomeActivity extends Activity {
         cell.setClipToPadding(false);
 
         FrameLayout tile = new FrameLayout(this);
-        tile.setBackgroundResource(R.drawable.tile_bg);
+        tile.setBackground(tileBackground(fill));
         tile.setClipToOutline(true);
         tile.setFocusable(true);
         tile.setTag(tag);
@@ -354,7 +363,7 @@ public class HomeActivity extends Activity {
             inner.addView(icon, new LinearLayout.LayoutParams(iconSize, iconSize));
             TextView name = new TextView(this);
             name.setText(text);
-            name.setTextColor(Color.WHITE);
+            name.setTextColor(fill != 0 || !theme.light ? Color.WHITE : theme.text);
             name.setTextSize(TypedValue.COMPLEX_UNIT_PX, Math.max(height / 9f, sp(11)));
             name.setSingleLine(true);
             name.setEllipsize(TextUtils.TruncateAt.END);
@@ -369,7 +378,7 @@ public class HomeActivity extends Activity {
 
         TextView label = new TextView(this);
         label.setText(text);
-        label.setTextColor(color(R.color.text_primary));
+        label.setTextColor(darkText() ? theme.text : Color.WHITE);
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         label.setSingleLine(true);
         label.setEllipsize(TextUtils.TruncateAt.END);
@@ -502,6 +511,15 @@ public class HomeActivity extends Activity {
                 refresh(null);
             });
         }
+        labels.add(getString(R.string.theme_label, getString(theme.nameRes)));
+        actions.add(this::pickTheme);
+        labels.add(getString(R.string.size_label, getString(Theme.SIZE_NAMES[store.tileSize()])));
+        actions.add(this::pickTileSize);
+        labels.add(getString(store.squareCorners() ? R.string.corners_square : R.string.corners_round));
+        actions.add(() -> {
+            store.toggleCorners();
+            refresh(null);
+        });
         labels.add(getString(R.string.toggle_inputs));
         actions.add(() -> {
             store.toggleInputs();
@@ -515,7 +533,7 @@ public class HomeActivity extends Activity {
         labels.add(getString(R.string.toggle_wallpaper));
         actions.add(() -> {
             store.toggleWallpaper();
-            applyBackground();
+            refresh(null);
         });
         labels.add(getString(R.string.reset_layout));
         actions.add(() -> {
@@ -526,15 +544,53 @@ public class HomeActivity extends Activity {
         showMenu(getString(R.string.settings), labels, actions);
     }
 
+    /** Lista de temas com o atual marcado; a escolha vale na hora. */
+    private void pickTheme() {
+        String[] names = new String[Theme.ALL.length];
+        int current = 0;
+        for (int i = 0; i < Theme.ALL.length; i++) {
+            names[i] = getString(Theme.ALL[i].nameRes);
+            if (Theme.ALL[i] == theme) current = i;
+        }
+        new AlertDialog.Builder(this, dialogTheme())
+                .setTitle(R.string.theme_title)
+                .setSingleChoiceItems(names, current, (dialog, which) -> {
+                    store.setTheme(Theme.ALL[which]);
+                    dialog.dismiss();
+                    refresh(null);
+                })
+                .show();
+    }
+
+    private void pickTileSize() {
+        String[] names = new String[Theme.SIZE_NAMES.length];
+        for (int i = 0; i < names.length; i++) names[i] = getString(Theme.SIZE_NAMES[i]);
+        new AlertDialog.Builder(this, dialogTheme())
+                .setTitle(R.string.size_title)
+                .setSingleChoiceItems(names, store.tileSize(), (dialog, which) -> {
+                    store.setTileSize(which);
+                    dialog.dismiss();
+                    refresh(null);
+                })
+                .show();
+    }
+
     private void showMenu(String title, List<String> labels, List<Runnable> actions) {
-        // Theme_DeviceDefault_Dialog_Alert só existe a partir do Android 5.1.
-        int theme = Build.VERSION.SDK_INT >= 22
-                ? android.R.style.Theme_DeviceDefault_Dialog_Alert
-                : android.R.style.Theme_Material_Dialog_Alert;
-        new AlertDialog.Builder(this, theme)
+        new AlertDialog.Builder(this, dialogTheme())
                 .setTitle(title)
                 .setItems(labels.toArray(new String[0]), (dialog, which) -> actions.get(which).run())
                 .show();
+    }
+
+    /** Diálogos claros no tema claro. Os estilos DeviceDefault de alerta só existem a partir do 5.1. */
+    private int dialogTheme() {
+        boolean light = theme != null && theme.light;
+        if (Build.VERSION.SDK_INT >= 22) {
+            return light ? android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
+                    : android.R.style.Theme_DeviceDefault_Dialog_Alert;
+        }
+        return light ? android.R.style.Theme_Material_Light_Dialog_Alert
+                : android.R.style.Theme_Material_Dialog_Alert;
     }
 
     private void openSafely(Intent intent) {
@@ -555,17 +611,48 @@ public class HomeActivity extends Activity {
         clock.setFormat12Hour(DateFormat.getBestDateTimePattern(locale, seconds ? "hms" : "hm"));
     }
 
-    /** Gradiente próprio, ou o papel de parede da TV com um véu escuro por cima. */
-    private void applyBackground() {
+    /** Cores do tema: fundo (gradiente ou papel de parede da TV com véu), textos e botão de ajustes. */
+    private void applyTheme() {
         if (store.useWallpaper()) {
             getWindow().addFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
             getWindow().setBackgroundDrawable(null);
             root.setBackgroundResource(R.drawable.scrim);
         } else {
             getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SHOW_WALLPAPER);
-            getWindow().setBackgroundDrawableResource(R.drawable.background);
+            getWindow().setBackgroundDrawable(new GradientDrawable(
+                    GradientDrawable.Orientation.TOP_BOTTOM, new int[] {theme.bgTop, theme.bgBottom}));
             root.setBackground(null);
         }
+        boolean darkText = darkText();
+        clock.setTextColor(darkText ? theme.text : Color.WHITE);
+        for (TextView t : secondaryTexts) t.setTextColor(darkText ? theme.textSecondary : 0xB3FFFFFF);
+        settingsButton.setBackground(tileBackground(0));
+        settingsButton.setColorFilter(darkText ? theme.text : Color.WHITE);
+    }
+
+    /** Texto escuro só no tema claro sem papel de parede (o véu sobre o papel de parede é escuro). */
+    private boolean darkText() {
+        return theme.light && !store.useWallpaper();
+    }
+
+    /** Fundo de um bloco: cor própria (ou a do tema), cantos conforme o ajuste, contorno no foco. */
+    private Drawable tileBackground(int fill) {
+        int color = fill != 0 ? fill : theme.tile;
+        float radius = store.squareCorners() ? dp(3) : dp(14);
+
+        GradientDrawable normal = new GradientDrawable();
+        normal.setColor(color);
+        normal.setCornerRadius(radius);
+
+        GradientDrawable focused = new GradientDrawable();
+        focused.setColor(color);
+        focused.setCornerRadius(radius);
+        focused.setStroke(dp(3), theme.focus);
+
+        StateListDrawable states = new StateListDrawable();
+        states.addState(new int[] {android.R.attr.state_focused}, focused);
+        states.addState(new int[0], normal);
+        return states;
     }
 
     @SuppressWarnings("deprecation")
@@ -577,11 +664,6 @@ public class HomeActivity extends Activity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
-    }
-
-    @SuppressWarnings("deprecation")
-    private int color(int id) {
-        return Build.VERSION.SDK_INT >= 23 ? getColor(id) : getResources().getColor(id);
     }
 
     private Drawable getDrawableCompat(int id) {

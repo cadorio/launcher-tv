@@ -16,7 +16,7 @@ versão LG (pasta [`web/`](../web)); só o adaptador [`platform.js`](platform.js
 |---|---|
 | Setas + **OK** | Navegar e abrir app |
 | **Segurar OK** ou botão **vermelho** | Opções do app: fixar/remover dos favoritos, mover, ocultar |
-| Botão **verde** ou ⚙ | Ajustes: apps ocultos, segundos no relógio, organização padrão, sair |
+| Botão **verde** ou ⚙ | Ajustes: tema, tamanho dos blocos, cantos, apps ocultos, segundos, organização padrão, sair |
 | **Voltar** | Volta ao topo; no topo, sai do app |
 
 Favoritos e apps ocultos ficam salvos na própria TV.
@@ -64,8 +64,8 @@ apps de exemplo. Setas + Enter navegam; **M** = opções do app, **S** = ajustes
 - Não substitui a tela inicial da Samsung, nem desativa apps ou anúncios do sistema.
 - Apps instalados em Modo Desenvolvedor podem sumir depois de uma atualização de firmware;
   basta rodar o `install` de novo.
-- O Tizen não fornece banners dos apps, só ícones; os blocos mostram ícone + nome
-  (ou a inicial colorida, se o ícone não carregar).
+- O Tizen não fornece banners dos apps, só ícones: o bloco mostra o ícone com a cor dele no
+  fundo (ou a inicial colorida, se o ícone não carregar).
 - Ainda não foi testado numa TV real. Se a lista de apps vier vazia, o modelo restringiu a
   permissão `application.info`. Abra uma issue com o modelo e o ano da TV.
 

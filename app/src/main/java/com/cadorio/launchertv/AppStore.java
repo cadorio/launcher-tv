@@ -29,6 +29,9 @@ final class AppStore {
     private static final String KEY_WALLPAPER = "use_wallpaper";
     private static final String KEY_INITIALISED = "initialised";
     private static final String KEY_INPUTS = "show_inputs";
+    private static final String KEY_THEME = "theme";
+    private static final String KEY_TILE_SIZE = "tile_size";
+    private static final String KEY_SQUARE = "square_corners";
 
     /**
      * Apps de streaming comuns. Na primeira execução, os que estiverem instalados viram os
@@ -193,6 +196,32 @@ final class AppStore {
 
     void toggleWallpaper() {
         prefs.edit().putBoolean(KEY_WALLPAPER, !useWallpaper()).apply();
+    }
+
+    Theme theme() {
+        return Theme.byId(prefs.getString(KEY_THEME, Theme.ALL[0].id));
+    }
+
+    void setTheme(Theme theme) {
+        prefs.edit().putString(KEY_THEME, theme.id).apply();
+    }
+
+    /** 0 = pequeno, 1 = médio (padrão), 2 = grande. */
+    int tileSize() {
+        int size = prefs.getInt(KEY_TILE_SIZE, 1);
+        return size < 0 || size >= Theme.SIZE_COLUMNS.length ? 1 : size;
+    }
+
+    void setTileSize(int size) {
+        prefs.edit().putInt(KEY_TILE_SIZE, size).apply();
+    }
+
+    boolean squareCorners() {
+        return prefs.getBoolean(KEY_SQUARE, false);
+    }
+
+    void toggleCorners() {
+        prefs.edit().putBoolean(KEY_SQUARE, !squareCorners()).apply();
     }
 
     boolean showInputs() {

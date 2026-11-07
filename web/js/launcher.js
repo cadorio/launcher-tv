@@ -37,7 +37,15 @@
             launchFailed: 'Não foi possível abrir %s',
             hidden: '%s foi ocultado. Ajustes → Mostrar apps ocultos traz de volta.',
             loadFailed: 'Não foi possível listar os apps desta TV.',
-            notInstalled: '%s não está instalado nesta TV e foi ocultado.'
+            notInstalled: '%s não está instalado nesta TV e foi ocultado.',
+            theme: 'Tema: %s',
+            themeTitle: 'Tema',
+            size: 'Tamanho dos blocos: %s',
+            sizeTitle: 'Tamanho dos blocos',
+            cornersRound: 'Cantos: arredondados (mudar para retos)',
+            cornersSquare: 'Cantos: retos (mudar para arredondados)',
+            themes: { graphite: 'Grafite', oled: 'Preto (OLED)', ocean: 'Oceano', aurora: 'Aurora', forest: 'Floresta', light: 'Claro' },
+            sizes: { s: 'Pequeno', m: 'Médio', l: 'Grande' }
         },
         en: {
             favorites: 'Favorites',
@@ -57,9 +65,21 @@
             launchFailed: 'Could not open %s',
             hidden: '%s is hidden. Settings → Show hidden apps brings it back.',
             loadFailed: 'Could not list the apps on this TV.',
-            notInstalled: '%s is not installed on this TV and was hidden.'
+            notInstalled: '%s is not installed on this TV and was hidden.',
+            theme: 'Theme: %s',
+            themeTitle: 'Theme',
+            size: 'Tile size: %s',
+            sizeTitle: 'Tile size',
+            cornersRound: 'Corners: rounded (switch to square)',
+            cornersSquare: 'Corners: square (switch to rounded)',
+            themes: { graphite: 'Graphite', oled: 'Black (OLED)', ocean: 'Ocean', aurora: 'Aurora', forest: 'Forest', light: 'Light' },
+            sizes: { s: 'Small', m: 'Medium', l: 'Large' }
         }
     };
+
+    // Mesmos temas da versão Android; as cores ficam em css/style.css (classes theme-*).
+    var THEMES = ['graphite', 'oled', 'ocean', 'aurora', 'forest', 'light'];
+    var SIZES = ['s', 'm', 'l'];
 
     var lang = (navigator.language || 'pt').toLowerCase().indexOf('en') === 0 ? 'en' : 'pt';
 
@@ -169,7 +189,14 @@
             // Ícone do sistema; se não carregar, fica a inicial colorida.
             var img = document.createElement('img');
             img.alt = '';
-            img.onload = function () { if (badge.parentNode) badge.parentNode.replaceChild(img, badge); };
+            img.onload = function () {
+                if (badge.parentNode) badge.parentNode.replaceChild(img, badge);
+                var color = iconColor(img);
+                if (color) {
+                    el.style.backgroundColor = color;
+                    el.className += ' colored';
+                }
+            };
             img.src = app.icon;
         }
         el.appendChild(badge);
@@ -196,7 +223,37 @@
         });
 
         var target = focusKey && document.querySelector('[data-key="' + cssEscape(focusKey) + '"]');
+        // O botão de ajustes não é redesenhado: se ele estava em foco (mudando o tema), continua.
+        if (!target && focused && focused.id === 'settings') target = focused;
         setFocus(target || firstTile());
+    }
+
+    /**
+     * A cor predominante do ícone, escurecida, para o bloco parecer o "cartão" do app.
+     * O canvas recusa ler ícones de outra origem em alguns sistemas: aí fica a cor do tema.
+     */
+    function iconColor(img) {
+        try {
+            var size = 24;
+            var c = document.createElement('canvas');
+            c.width = size;
+            c.height = size;
+            var ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0, size, size);
+            var d = ctx.getImageData(0, 0, size, size).data;
+            var r = 0, g = 0, b = 0, n = 0;
+            for (var i = 0; i < d.length; i += 4) {
+                if (d[i + 3] < 128) continue;
+                r += d[i]; g += d[i + 1]; b += d[i + 2]; n++;
+            }
+            if (n < size * size / 8) return '';
+            r /= n; g /= n; b /= n;
+            // Limita o brilho em 55%, como no Android: texto branco por cima.
+            var k = Math.min(1, 140 / Math.max(r, g, b, 1));
+            return 'rgb(' + Math.round(r * k) + ',' + Math.round(g * k) + ',' + Math.round(b * k) + ')';
+        } catch (e) {
+            return '';
+        }
     }
 
     /** Uma cor estável por nome, para a inicial dos apps sem ícone. */
@@ -360,8 +417,40 @@
         render('fav:' + app.id);
     }
 
+    function applyDesign() {
+        var theme = load('theme', 'graphite');
+        if (!contains(THEMES, theme)) theme = 'graphite';
+        var size = load('size', 'm');
+        if (!contains(SIZES, size)) size = 'm';
+        document.body.className = 'theme-' + theme + ' size-' + size + (load('square', false) ? ' square' : '');
+    }
+
+    function pick(title, values, names, key, fallback) {
+        var current = load(key, fallback);
+        var items = values.map(function (v) {
+            return { label: (v === current ? '✓ ' : '\u2003') + names[v], run: function () {
+                save(key, v);
+                applyDesign();
+                render(null);
+                showSettings();
+            } };
+        });
+        openMenu(title, items, Math.max(0, values.indexOf(current)));
+    }
+
     function showSettings() {
         var items = [];
+        items.push({ label: t('theme', TEXT[lang].themes[load('theme', 'graphite')] || ''), run: function () {
+            pick(t('themeTitle'), THEMES, TEXT[lang].themes, 'theme', 'graphite');
+        } });
+        items.push({ label: t('size', TEXT[lang].sizes[load('size', 'm')] || ''), run: function () {
+            pick(t('sizeTitle'), SIZES, TEXT[lang].sizes, 'size', 'm');
+        } });
+        items.push({ label: t(load('square', false) ? 'cornersSquare' : 'cornersRound'), run: function () {
+            save('square', !load('square', false));
+            applyDesign();
+            render(null);
+        } });
         var hiddenCount = hiddenIds().filter(byId).length;
         if (hiddenCount > 0) {
             items.push({ label: t('showHidden', hiddenCount), run: function () { save('hidden', []); render(null); } });
@@ -376,7 +465,7 @@
         openMenu(t('settings'), items);
     }
 
-    function openMenu(title, items) {
+    function openMenu(title, items, selected) {
         menuItems = items;
         menuReturn = focused;
         $('menu-title').textContent = title;
@@ -390,7 +479,7 @@
             box.appendChild(el);
         });
         $('menu').hidden = false;
-        setFocus(box.firstChild);
+        setFocus(box.childNodes[selected || 0] || box.firstChild);
     }
 
     var menuReturn = null;
@@ -485,6 +574,7 @@
         for (var i = 0; i < labels.length; i++) labels[i].textContent = t(labels[i].getAttribute('data-i18n'));
         $('settings').setAttribute('aria-label', t('settings'));
 
+        applyDesign();
         P.init();
         document.addEventListener('keydown', onKeyDown);
         document.addEventListener('keyup', onKeyUp);

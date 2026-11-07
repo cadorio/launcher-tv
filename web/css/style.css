@@ -31,9 +31,10 @@ h2 { font-size: 40px; font-weight: 500; color: rgba(255, 255, 255, .7); margin: 
 #empty-favorites { font-size: 30px; color: rgba(255, 255, 255, .7); margin-bottom: 40px; }
 #empty-favorites[hidden] { display: none; }
 
-/* 6 colunas: (1696 - 5 * 44) / 6 = 246px. Sem CSS grid nem gap: o Tizen 3/4 usa Chromium 47-56. */
+/* Sem CSS grid nem gap: o Tizen 3/4 usa Chromium 47-56. Largura útil: 1696px, espaço de 44px.
+   Ajustes → Tamanho dos blocos troca a classe size-* do body. */
 #grid { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; padding-bottom: 180px; }
-#grid .tile { width: 246px; height: 138px; margin: 0 44px 36px 0; }
+#grid .tile { width: 246px; height: 138px; margin: 0 44px 36px 0; }           /* médio: 6 colunas */
 #grid .tile:nth-child(6n) { margin-right: 0; }
 
 .tile {
@@ -85,3 +86,58 @@ footer {
     position: fixed; left: 50%; bottom: 120px; -webkit-transform: translateX(-50%); transform: translateX(-50%);
     padding: 24px 40px; border-radius: 20px; font-size: 30px; background: rgba(0, 0, 0, .85); z-index: 20;
 }
+
+/* ---------------------------------------------------------------- tamanho dos blocos */
+
+/* pequeno: 7 colunas, (1696 - 6 * 44) / 7 = 204px */
+.size-s #grid .tile { width: 204px; height: 115px; }
+.size-s #grid .tile:nth-child(6n) { margin-right: 44px; }
+.size-s #grid .tile:nth-child(7n) { margin-right: 0; }
+.size-s #favorites .tile { width: 300px; height: 169px; }
+.size-s #grid .tile .badge { width: 56px; height: 56px; line-height: 56px; font-size: 30px; }
+.size-s #grid .tile .name { font-size: 22px; margin-top: 8px; }
+
+/* grande: 5 colunas, (1696 - 4 * 44) / 5 = 304px */
+.size-l #grid .tile { width: 304px; height: 171px; }
+.size-l #grid .tile:nth-child(6n) { margin-right: 44px; }
+.size-l #grid .tile:nth-child(5n) { margin-right: 0; }
+.size-l #favorites .tile { width: 440px; height: 248px; }
+.size-l #grid .tile .badge { width: 88px; height: 88px; line-height: 88px; font-size: 48px; }
+.size-l #grid .tile .name { font-size: 30px; }
+
+/* ---------------------------------------------------------------- cantos */
+
+.square .tile, .square #settings { border-radius: 6px; }
+
+/* ---------------------------------------------------------------- temas (mesmas cores do Android) */
+
+.theme-oled { background: #000; }
+.theme-oled .tile, .theme-oled #settings { background-color: #1c1c1e; }
+.theme-oled .menu-box { background: #1c1c1e; }
+
+.theme-ocean { background: linear-gradient(180deg, #0b3a5c 0%, #041320 100%); }
+.theme-ocean .tile, .theme-ocean #settings { background-color: rgba(255, 255, 255, .15); }
+.theme-ocean .focusable.focused { box-shadow: 0 0 0 6px #7fd6ff, 0 24px 48px rgba(0, 0, 0, .5); }
+.theme-ocean .menu-box { background: #0f3550; }
+
+.theme-aurora { background: linear-gradient(180deg, #2a1446 0%, #0b1a2e 100%); }
+.theme-aurora .tile, .theme-aurora #settings { background-color: rgba(255, 255, 255, .16); }
+.theme-aurora .focusable.focused { box-shadow: 0 0 0 6px #c9a7ff, 0 24px 48px rgba(0, 0, 0, .5); }
+.theme-aurora .menu-box { background: #2b1d47; }
+
+.theme-forest { background: linear-gradient(180deg, #12372a 0%, #06120d 100%); }
+.theme-forest .tile, .theme-forest #settings { background-color: rgba(255, 255, 255, .15); }
+.theme-forest .focusable.focused { box-shadow: 0 0 0 6px #9be3b0, 0 24px 48px rgba(0, 0, 0, .5); }
+.theme-forest .menu-box { background: #163a2d; }
+
+.theme-light { background: linear-gradient(180deg, #eef1f5 0%, #cfd6df 100%); color: #111; }
+.theme-light .tile, .theme-light #settings { background-color: rgba(0, 0, 0, .08); color: #111; }
+.theme-light .tile.colored { color: #fff; }
+.theme-light #date, .theme-light h2, .theme-light #empty-favorites { color: rgba(17, 17, 17, .6); }
+.theme-light .focusable.focused { box-shadow: 0 0 0 6px #1b2433, 0 24px 48px rgba(0, 0, 0, .25); }
+.theme-light footer { color: rgba(17, 17, 17, .6); background: linear-gradient(0deg, rgba(255, 255, 255, .85), transparent); }
+.theme-light .menu-box { background: #fff; color: #111; }
+.theme-light .menu-item.focused { background: #1b2433; color: #fff; box-shadow: none; }
+
+/* Itens de menu usam fundo, não contorno, no foco (vence as regras de tema acima). */
+.menu-box .menu-item.focusable.focused { box-shadow: none; }

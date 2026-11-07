@@ -15,7 +15,7 @@ de apps e entradas (HDMI), navegável pelo controle. A interface é a mesma da v
 |---|---|
 | Setas + **OK** | Navegar e abrir app |
 | **Segurar OK** ou botão **vermelho** | Fixar/remover dos favoritos, mover, ocultar |
-| Botão **verde** ou ⚙ | Ajustes: apps ocultos, segundos no relógio, organização padrão, sair |
+| Botão **verde** ou ⚙ | Ajustes: tema, tamanho dos blocos, cantos, apps ocultos, segundos, organização padrão, sair |
 | **Voltar** | Volta ao topo; no topo, fecha o app |
 
 O ponteiro do Magic Remote não é usado: navegue pelas setas.
@@ -25,7 +25,10 @@ O ponteiro do Magic Remote não é usado: navegue pelas setas.
 A LG normalmente não deixa apps de desenvolvedor lerem a lista de apps instalados. Então:
 
 1. O launcher **tenta** ler a lista real da TV. Se a LG permitir, mostra exatamente o que está instalado.
-2. Se não permitir, usa um **catálogo** dos apps mais comuns na LG (Netflix, YouTube, Prime Video,
+2. Se não permitir, lê o `appinfo.json` de cada app direto das pastas da TV
+   (`/usr/palm/applications` e `/media/cryptofs/apps/...`). Dá certo quando a LG deixa o app ler
+   essas pastas: aí aparecem **os ícones reais** e só os apps que existem de verdade.
+3. Se nem isso for possível, usa um **catálogo** dos apps mais comuns na LG (Netflix, YouTube, Prime Video,
    Disney+, Apple TV, Spotify, TV ao vivo, HDMI 1-4, Navegador, LG Content Store, Configurações).
    Um app do catálogo que não abrir é considerado não instalado: **some sozinho**, com um aviso.
    *Ajustes → Mostrar apps ocultos* traz todos de volta.
@@ -61,7 +64,8 @@ O `.ipk` pronto também sai no GitHub em **Actions → build → launcher-tv-web
 - Não substitui a tela inicial da LG nem desativa apps ou anúncios do sistema.
 - **A sessão do Modo Desenvolvedor expira** (o app Developer Mode mostra o tempo restante e tem
   o botão *Extend*). Se expirar, os apps instalados por ele somem: reinstale com o `install`.
-- Sem acesso à lista real, os ícones não aparecem: os blocos mostram a inicial colorida.
+- Se a LG bloquear tanto a lista de apps quanto a leitura das pastas, não há como saber o ícone:
+  os blocos mostram a inicial colorida. Não sei ainda quais modelos permitem o quê.
 - Ainda não foi testado numa TV LG real (só no navegador, simulando as APIs da LG).
 
 ## Menos rastreamento na LG (pelo controle)
