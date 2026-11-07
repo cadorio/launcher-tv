@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name" translatable="false">Launcher TV</string>
+    <string name="favorites">Favoritos</string>
+    <string name="all_apps">Todos os apps</string>
+    <string name="empty_favorites">Segure OK (ou aperte Menu) em um app para fixá-lo aqui.</string>
+    <string name="settings">Ajustes</string>
+    <string name="add_favorite">Fixar nos favoritos</string>
+    <string name="remove_favorite">Remover dos favoritos</string>
+    <string name="move_left">Mover para a esquerda</string>
+    <string name="move_right">Mover para a direita</string>
+    <string name="hide_app">Ocultar app</string>
+    <string name="app_info">Informações do app</string>
+    <string name="system_settings">Configurações da TV</string>
+    <string name="show_hidden">Mostrar apps ocultos (%1$d)</string>
+    <string name="toggle_seconds">Relógio: mostrar/ocultar segundos</string>
+    <string name="toggle_wallpaper">Fundo: alternar gradiente / papel de parede da TV</string>
+    <string name="reset_layout">Restaurar organização padrão</string>
+    <string name="launch_failed">Não foi possível abrir %1$s</string>
+    <string name="hidden_done">%1$s foi ocultado. Ajustes → Mostrar apps ocultos para trazer de volta.</string>
+</resources>
