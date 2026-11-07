@@ -10,6 +10,9 @@ Uma tela inicial limpa para qualquer **Android TV / Google TV**, sem anúncios e
   e mostra o nome.
 - **Funciona offline.** O launcher não pede internet nem coleta nada.
 
+**TV Samsung (Tizen)?** Existe uma versão própria em [`tizen/`](tizen/README.md): o mesmo visual,
+como um app que você abre (a Samsung não deixa trocar a tela inicial).
+
 Inspirado no projeto [cleanyourtv](https://github.com/Gathin23/cleanyourtv) (MIT); o código
 daqui foi escrito do zero.
 
@@ -92,6 +95,7 @@ Uma restauração de fábrica também reativa tudo.
 app/                      launcher Android (Java, minSdk 26, sem dependências)
   src/main/java/.../HomeActivity.java   tela inicial e navegação por controle
   src/main/java/.../AppStore.java       lista de apps, favoritos e ocultos
+tizen/                    versão para TVs Samsung (web app Tizen) e build.sh para instalar
 tools/tv.sh               conectar, instalar, limpar e restaurar via ADB
 tools/packages/*.txt      listas de pacotes para desativar
 ```
