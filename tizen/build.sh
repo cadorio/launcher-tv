@@ -5,6 +5,7 @@
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WEB="$HERE/../web"
 OUT="$HERE/build"
 WGT="$OUT/LauncherTV.wgt"
 APP_ID="LnchrTV001.LauncherTV"
@@ -23,11 +24,18 @@ find_tool() {
     die "\"$name\" não encontrado. Instale o Tizen Studio (veja tizen/README.md)."
 }
 
-cmd_package() {
-    local tizen; tizen=$(find_tool tizen)
+cmd_stage() {
     local stage="$OUT/stage"
     rm -rf "$OUT" && mkdir -p "$stage"
-    cp -r "$HERE/config.xml" "$HERE/index.html" "$HERE/icon.png" "$HERE/css" "$HERE/js" "$stage/"
+    # Interface comum (web/) + o adaptador Samsung no lugar do de demonstração.
+    cp -r "$WEB/index.html" "$WEB/css" "$WEB/js" "$HERE/config.xml" "$HERE/icon.png" "$stage/"
+    cp "$HERE/platform.js" "$stage/js/platform.js"
+    echo "$stage"
+}
+
+cmd_package() {
+    local tizen; tizen=$(find_tool tizen)
+    local stage; stage=$(cmd_stage)
     "$tizen" package -t wgt -s "$PROFILE" -o "$OUT" -- "$stage" ||
         die "falha ao assinar. O perfil de certificado \"$PROFILE\" existe? (TIZEN_PROFILE=<nome> para usar outro)"
     local made; made=$(ls "$OUT"/*.wgt | head -n 1)
@@ -49,13 +57,14 @@ cmd_install() {
 }
 
 cmd_preview() {
-    echo "Abra no navegador (modo demonstração, setas + Enter; M = opções, S = ajustes):"
-    echo "  file://$HERE/index.html"
+    echo "Abra no navegador (modo demonstração, setas + Enter; M = opções, S = ajustes, Esc = voltar):"
+    echo "  file://$(cd "$WEB" && pwd)/index.html"
 }
 
 case "${1:-}" in
+    stage) cmd_stage ;;
     package) cmd_package ;;
     install) shift; cmd_install "$@" ;;
     preview) cmd_preview ;;
-    *) echo "Uso: $0 package | install <ip-da-tv> | preview"; exit 1 ;;
+    *) echo "Uso: $0 package | install <ip-da-tv> | preview | stage"; exit 1 ;;
 esac

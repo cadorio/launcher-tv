@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.text.TextUtils;
 
 import java.text.Collator;
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ final class AppStore {
     private static final String KEY_SECONDS = "show_seconds";
     private static final String KEY_WALLPAPER = "use_wallpaper";
     private static final String KEY_INITIALISED = "initialised";
+    private static final String KEY_INPUTS = "show_inputs";
 
     /**
      * Apps de streaming comuns. Na primeira execução, os que estiverem instalados viram os
@@ -100,7 +102,7 @@ final class AppStore {
             }
         }
         prefs.edit()
-                .putString(KEY_FAVORITES, String.join("\n", favorites))
+                .putString(KEY_FAVORITES, TextUtils.join("\n", favorites))
                 .putBoolean(KEY_INITIALISED, true)
                 .apply();
     }
@@ -193,6 +195,14 @@ final class AppStore {
         prefs.edit().putBoolean(KEY_WALLPAPER, !useWallpaper()).apply();
     }
 
+    boolean showInputs() {
+        return prefs.getBoolean(KEY_INPUTS, true);
+    }
+
+    void toggleInputs() {
+        prefs.edit().putBoolean(KEY_INPUTS, !showInputs()).apply();
+    }
+
     private boolean isHidden(AppEntry e) {
         return prefs.getStringSet(KEY_HIDDEN, Collections.emptySet()).contains(e.key);
     }
@@ -205,7 +215,7 @@ final class AppStore {
     }
 
     private void saveFavorites(List<String> keys) {
-        prefs.edit().putString(KEY_FAVORITES, String.join("\n", keys)).apply();
+        prefs.edit().putString(KEY_FAVORITES, TextUtils.join("\n", keys)).apply();
     }
 
     private static int indexOf(List<AppEntry> list, AppEntry e) {

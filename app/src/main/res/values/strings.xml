@@ -3,7 +3,9 @@
     <string name="app_name" translatable="false">Launcher TV</string>
     <string name="favorites">Favoritos</string>
     <string name="all_apps">Todos os apps</string>
-    <string name="empty_favorites">Segure OK (ou aperte Menu) em um app para fixá-lo aqui.</string>
+    <string name="inputs">Entradas</string>
+    <string name="toggle_inputs">Entradas (HDMI): mostrar/ocultar</string>
+    <string name="empty_favorites">Segure OK (ou aperte Menu ou o botão vermelho) em um app para fixá-lo aqui. Botão verde: ajustes.</string>
     <string name="settings">Ajustes</string>
     <string name="add_favorite">Fixar nos favoritos</string>
     <string name="remove_favorite">Remover dos favoritos</string>

@@ -8,10 +8,11 @@ android {
 
     defaultConfig {
         applicationId 'com.cadorio.launchertv'
-        minSdk 26
+        // 21 = Android 5.0: cobre todas as TVs Android, inclusive as Sony Bravia de 2015.
+        minSdk 21
         targetSdk 34
-        versionCode 1
-        versionName '1.0'
+        versionCode 2
+        versionName '1.1'
     }
 
     buildTypes {

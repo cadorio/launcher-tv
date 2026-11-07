@@ -1,7 +1,10 @@
 # Launcher TV para Samsung (Tizen)
 
-Versão do Launcher TV para TVs Samsung com Tizen OS (2017 em diante): relógio, fileira de
-favoritos e todos os apps da TV numa grade, navegável pelo controle.
+Versão do Launcher TV para TVs Samsung com Tizen OS (2015 em diante): relógio, fileira de
+favoritos e todos os apps da TV numa grade, navegável pelo controle. A interface é a mesma da
+versão LG (pasta [`web/`](../web)); só o adaptador [`platform.js`](platform.js) é da Samsung.
+
+![Launcher TV: relógio, favoritos e todos os apps](../docs/screenshots/home.jpg)
 
 > **Diferença importante para o Android:** a Samsung não permite trocar a tela inicial (Smart Hub)
 > nem desativar apps de fábrica. Aqui o Launcher TV é **um app que você abre** pela barra de apps.
@@ -53,7 +56,7 @@ app. Para outro nome de perfil: `TIZEN_PROFILE=meuperfil ./tizen/build.sh instal
 
 ## Testar sem TV
 
-Abra `tizen/index.html` no Chrome com a janela em 1920×1080. Sem a API do Tizen, ele mostra
+Abra `web/index.html` no Chrome com a janela em 1920×1080. Sem a API do Tizen, ele mostra
 apps de exemplo. Setas + Enter navegam; **M** = opções do app, **S** = ajustes, **Esc** = voltar.
 
 ## Limitações conhecidas
@@ -61,7 +64,8 @@ apps de exemplo. Setas + Enter navegam; **M** = opções do app, **S** = ajustes
 - Não substitui a tela inicial da Samsung, nem desativa apps ou anúncios do sistema.
 - Apps instalados em Modo Desenvolvedor podem sumir depois de uma atualização de firmware;
   basta rodar o `install` de novo.
-- O Tizen não fornece banners dos apps, só ícones; os blocos mostram ícone + nome.
+- O Tizen não fornece banners dos apps, só ícones; os blocos mostram ícone + nome
+  (ou a inicial colorida, se o ícone não carregar).
 - Ainda não foi testado numa TV real. Se a lista de apps vier vazia, o modelo restringiu a
   permissão `application.info`. Abra uma issue com o modelo e o ano da TV.
 

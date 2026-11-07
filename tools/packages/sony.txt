@@ -1,0 +1,7 @@
+# Sony Bravia (Android TV 2015-2020 e Google TV 2021+).
+# Lista curta de propósito: rode "./tools/tv.sh scan" para ver o resto do que sua TV traz.
+# Nunca desative com.sony.dtv.tvx (o app de TV/entradas) nem os ajustes da TV.
+com.sony.dtv.sonyselect                       # Sony Select: vitrine de apps patrocinados
+com.sony.dtv.discovery                        # Menu "Discover": fileiras de recomendações da Sony
+com.sony.dtv.promos                           # Banners promocionais da Sony
+com.sony.dtv.recommendationservice            # Serviço de recomendações da Sony

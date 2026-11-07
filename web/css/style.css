@@ -1,4 +1,5 @@
-/* Layout fixo em 1920x1080: é a resolução lógica de todas as TVs Samsung com Tizen. */
+/* Layout fixo em 1920x1080: a resolução lógica das TVs Samsung (Tizen) e LG (webOS).
+   Os prefixos -webkit- são para Tizen 2.x (2015-2016) e webOS 3 (Chromium 38). */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
@@ -13,7 +14,7 @@ html, body {
 /* A página rola por código (scrollTop): o controle não tem roda de rolagem. */
 #page { position: absolute; top: 0; left: 0; width: 1920px; height: 1080px; overflow: hidden; padding: 72px 112px 0; }
 
-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+header { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: space-between; justify-content: space-between; margin-bottom: 24px; }
 #clock { font-size: 112px; font-weight: 200; line-height: 1; }
 #date { font-size: 36px; color: rgba(255, 255, 255, .7); margin-top: 8px; }
 
@@ -24,26 +25,33 @@ header { display: flex; align-items: center; justify-content: space-between; mar
 
 h2 { font-size: 40px; font-weight: 500; color: rgba(255, 255, 255, .7); margin: 16px 0 28px; }
 
-.row { display: flex; }
+.row { display: -webkit-flex; display: flex; }
 .row .tile { margin-right: 44px; }
-#favorites { margin-bottom: 36px; position: relative; transition: transform .2s ease-out; }
+#favorites { margin-bottom: 36px; position: relative; -webkit-transition: -webkit-transform .2s ease-out; transition: transform .2s ease-out; }
 #empty-favorites { font-size: 30px; color: rgba(255, 255, 255, .7); margin-bottom: 40px; }
 #empty-favorites[hidden] { display: none; }
 
 /* 6 colunas: (1696 - 5 * 44) / 6 = 246px. Sem CSS grid nem gap: o Tizen 3/4 usa Chromium 47-56. */
-#grid { display: flex; flex-wrap: wrap; padding-bottom: 180px; }
+#grid { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; padding-bottom: 180px; }
 #grid .tile { width: 246px; height: 138px; margin: 0 44px 36px 0; }
 #grid .tile:nth-child(6n) { margin-right: 0; }
 
 .tile {
     position: relative;
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center;
     border-radius: 28px;
     background: rgba(255, 255, 255, .2);
+    -webkit-transition: -webkit-transform .15s ease-out, box-shadow .15s ease-out;
     transition: transform .15s ease-out, box-shadow .15s ease-out;
 }
-#favorites .tile { width: 384px; height: 216px; flex: none; }
-.tile img { width: 40%; height: auto; max-height: 50%; object-fit: contain; }
+#favorites .tile { width: 384px; height: 216px; -webkit-flex: none; flex: none; }
+.tile img { width: 40%; height: auto; max-height: 50%; }
+/* Inicial colorida para apps sem ícone (catálogo LG, ícone que não carregou). */
+.tile .badge {
+    width: 72px; height: 72px; line-height: 72px; border-radius: 50%;
+    text-align: center; font-size: 40px; font-weight: 600; color: #fff;
+}
+#favorites .tile .badge { width: 96px; height: 96px; line-height: 96px; font-size: 52px; }
 .tile .name {
     margin-top: 12px; max-width: 90%;
     font-size: 26px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -64,7 +72,7 @@ footer {
 }
 
 #menu {
-    position: fixed; top: 0; right: 0; bottom: 0; left: 0; display: flex; align-items: center; justify-content: center;
+    position: fixed; top: 0; right: 0; bottom: 0; left: 0; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center;
     background: rgba(0, 0, 0, .6); z-index: 10;
 }
 #menu[hidden], #toast[hidden] { display: none; }

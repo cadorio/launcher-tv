@@ -2,7 +2,9 @@
 <resources>
     <string name="favorites">Favorites</string>
     <string name="all_apps">All apps</string>
-    <string name="empty_favorites">Hold OK (or press Menu) on an app to pin it here.</string>
+    <string name="inputs">Inputs</string>
+    <string name="toggle_inputs">Inputs (HDMI): show/hide</string>
+    <string name="empty_favorites">Hold OK (or press Menu or the red button) on an app to pin it here. Green button: settings.</string>
     <string name="settings">Settings</string>
     <string name="add_favorite">Pin to favorites</string>
     <string name="remove_favorite">Remove from favorites</string>

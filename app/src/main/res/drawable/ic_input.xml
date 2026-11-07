@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Entrada genérica (HDMI): um conector. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp" android:height="48dp"
+    android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="#FFFFFFFF"
+        android:pathData="M3,7h18v6l-3,4H6l-3,-4V7zM5,9v3.3L7,15h10l2,-2.7V9H5zM7,10h2v2H7zM11,10h2v2h-2zM15,10h2v2h-2z" />
+</vector>
