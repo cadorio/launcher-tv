@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <widget xmlns="http://www.w3.org/ns/widgets" xmlns:tizen="http://tizen.org/ns/widgets"
-        id="https://github.com/cadorio/launcher-tv" version="1.0.0" viewmodes="maximized">
-    <tizen:application id="LnchrTV001.LauncherTV" package="LnchrTV001" required_version="3.0"/>
+        id="https://github.com/cadorio/launcher-tv" version="1.1.0" viewmodes="maximized">
+    <tizen:application id="LnchrTV001.LauncherTV" package="LnchrTV001" required_version="2.3"/>
     <name>Launcher TV</name>
     <description>Tela inicial limpa, sem anúncios, para TVs Samsung (Tizen).</description>
     <author href="https://github.com/cadorio">cadorio</author>

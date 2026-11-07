@@ -45,6 +45,7 @@ public class HomeActivity extends Activity {
     private static final int GRID_COLUMNS = 5;
     private static final String TAG_FAVORITE = "fav:";
     private static final String TAG_GRID = "all:";
+    private static final String TAG_INPUT = "in:";
 
     private AppStore store;
     private PackageManager pm;
@@ -52,6 +53,9 @@ public class HomeActivity extends Activity {
     private FrameLayout root;
     private ScrollView scroll;
     private LinearLayout favoritesRow;
+    private LinearLayout inputsRow;
+    private View inputsTitle;
+    private View inputsScroll;
     private LinearLayout grid;
     private TextView emptyFavorites;
     private TextClock clock;
@@ -116,6 +120,11 @@ public class HomeActivity extends Activity {
             if (event.getAction() == KeyEvent.ACTION_UP) goHome();
             return true;
         }
+        // Botão verde do controle (Sony, Philips, TCL…): ajustes do launcher de qualquer lugar.
+        if (event.getKeyCode() == KeyEvent.KEYCODE_PROG_GREEN) {
+            if (event.getAction() == KeyEvent.ACTION_UP) showSettings();
+            return true;
+        }
         return super.dispatchKeyEvent(event);
     }
 
@@ -156,10 +165,25 @@ public class HomeActivity extends Activity {
 
         emptyFavorites = new TextView(this);
         emptyFavorites.setText(R.string.empty_favorites);
-        emptyFavorites.setTextColor(getColor(R.color.text_secondary));
+        emptyFavorites.setTextColor(color(R.color.text_secondary));
         emptyFavorites.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
         emptyFavorites.setPadding(sidePadding, 0, sidePadding, dp(24));
         content.addView(emptyFavorites);
+
+        TextView inTitle = sectionTitle(getString(R.string.inputs));
+        inputsTitle = inTitle;
+        content.addView(inTitle);
+        HorizontalScrollView inScroll = new HorizontalScrollView(this);
+        inScroll.setHorizontalScrollBarEnabled(false);
+        inScroll.setClipToPadding(false);
+        inScroll.setClipChildren(false);
+        inScroll.setPadding(sidePadding, dp(18), sidePadding, dp(34));
+        inputsRow = new LinearLayout(this);
+        inputsRow.setOrientation(LinearLayout.HORIZONTAL);
+        inputsRow.setClipChildren(false);
+        inScroll.addView(inputsRow);
+        inputsScroll = inScroll;
+        content.addView(inScroll);
 
         content.addView(sectionTitle(getString(R.string.all_apps)));
         grid = new LinearLayout(this);
@@ -182,14 +206,14 @@ public class HomeActivity extends Activity {
         clocks.setOrientation(LinearLayout.VERTICAL);
 
         clock = new TextClock(this);
-        clock.setTextColor(getColor(R.color.text_primary));
+        clock.setTextColor(color(R.color.text_primary));
         clock.setTextSize(TypedValue.COMPLEX_UNIT_SP, 56);
         clock.setTypeface(Typeface.create("sans-serif-light", Typeface.NORMAL));
         clock.setIncludeFontPadding(false);
         clocks.addView(clock);
 
         date = new TextClock(this);
-        date.setTextColor(getColor(R.color.text_secondary));
+        date.setTextColor(color(R.color.text_secondary));
         date.setTextSize(TypedValue.COMPLEX_UNIT_SP, 18);
         Locale locale = Locale.getDefault();
         String datePattern = DateFormat.getBestDateTimePattern(locale, "EEEEdMMMM");
@@ -215,7 +239,7 @@ public class HomeActivity extends Activity {
     private TextView sectionTitle(String text) {
         TextView title = new TextView(this);
         title.setText(text);
-        title.setTextColor(getColor(R.color.text_secondary));
+        title.setTextColor(color(R.color.text_secondary));
         title.setTextSize(TypedValue.COMPLEX_UNIT_SP, 20);
         title.setTypeface(Typeface.create("sans-serif-medium", Typeface.NORMAL));
         title.setPadding(sidePadding, dp(8), sidePadding, 0);
@@ -252,6 +276,23 @@ public class HomeActivity extends Activity {
         emptyFavorites.setVisibility(favorites.isEmpty() ? View.VISIBLE : View.GONE);
 
         int gridWidth = (usable - (GRID_COLUMNS - 1) * gap) / GRID_COLUMNS;
+
+        inputsRow.removeAllViews();
+        List<TvInputs.Input> inputs = store.showInputs()
+                ? TvInputs.list(this) : new ArrayList<TvInputs.Input>();
+        for (int i = 0; i < inputs.size(); i++) {
+            final TvInputs.Input input = inputs.get(i);
+            Drawable icon = input.icon != null ? input.icon : getDrawableCompat(R.drawable.ic_input);
+            View cell = buildCell(TAG_INPUT + input.id, input.label, null, icon, gridWidth,
+                    v -> openInput(input), null);
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (i > 0) lp.leftMargin = gap;
+            inputsRow.addView(cell, lp);
+        }
+        int inputsVisibility = inputs.isEmpty() ? View.GONE : View.VISIBLE;
+        inputsTitle.setVisibility(inputsVisibility);
+        inputsScroll.setVisibility(inputsVisibility);
         grid.removeAllViews();
         List<AppEntry> all = store.allVisible();
         LinearLayout row = null;
@@ -277,6 +318,12 @@ public class HomeActivity extends Activity {
 
     /** Um bloco 16:9 com o banner do app (ou ícone + nome) e o nome embaixo, visível no foco. */
     private View buildTile(AppEntry app, String section, int width) {
+        return buildCell(section + app.key, app.label, app.banner(pm), app.icon(pm), width,
+                v -> launch(app, v), () -> showAppOptions(app, section));
+    }
+
+    private View buildCell(String tag, String text, Drawable banner, Drawable iconDrawable, int width,
+                           View.OnClickListener onClick, Runnable onOptions) {
         int height = width * 9 / 16;
 
         LinearLayout cell = new LinearLayout(this);
@@ -288,10 +335,9 @@ public class HomeActivity extends Activity {
         tile.setBackgroundResource(R.drawable.tile_bg);
         tile.setClipToOutline(true);
         tile.setFocusable(true);
-        tile.setTag(section + app.key);
-        tile.setContentDescription(app.label);
+        tile.setTag(tag);
+        tile.setContentDescription(text);
 
-        Drawable banner = app.banner(pm);
         if (banner != null) {
             ImageView image = new ImageView(this);
             image.setImageDrawable(banner);
@@ -303,11 +349,11 @@ public class HomeActivity extends Activity {
             inner.setOrientation(LinearLayout.VERTICAL);
             inner.setGravity(Gravity.CENTER);
             ImageView icon = new ImageView(this);
-            icon.setImageDrawable(app.icon(pm));
+            icon.setImageDrawable(iconDrawable);
             int iconSize = height * 45 / 100;
             inner.addView(icon, new LinearLayout.LayoutParams(iconSize, iconSize));
             TextView name = new TextView(this);
-            name.setText(app.label);
+            name.setText(text);
             name.setTextColor(Color.WHITE);
             name.setTextSize(TypedValue.COMPLEX_UNIT_PX, Math.max(height / 9f, sp(11)));
             name.setSingleLine(true);
@@ -322,8 +368,8 @@ public class HomeActivity extends Activity {
         cell.addView(tile, new LinearLayout.LayoutParams(width, height));
 
         TextView label = new TextView(this);
-        label.setText(app.label);
-        label.setTextColor(getColor(R.color.text_primary));
+        label.setText(text);
+        label.setTextColor(color(R.color.text_primary));
         label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 15);
         label.setSingleLine(true);
         label.setEllipsize(TextUtils.TruncateAt.END);
@@ -336,18 +382,22 @@ public class HomeActivity extends Activity {
             animateFocus(cell, v, focused);
             label.animate().alpha(focused ? 1f : 0f).setDuration(150).start();
         });
-        tile.setOnClickListener(v -> launch(app, v));
-        tile.setOnLongClickListener(v -> {
-            showAppOptions(app, section);
-            return true;
-        });
-        tile.setOnKeyListener((v, keyCode, event) -> {
-            if (keyCode == KeyEvent.KEYCODE_MENU && event.getAction() == KeyEvent.ACTION_UP) {
-                showAppOptions(app, section);
+        tile.setOnClickListener(onClick);
+        if (onOptions != null) {
+            tile.setOnLongClickListener(v -> {
+                onOptions.run();
                 return true;
-            }
-            return false;
-        });
+            });
+            // Menu (controles antigos) ou botão vermelho (Sony e outras marcas) abrem as opções.
+            tile.setOnKeyListener((v, keyCode, event) -> {
+                if ((keyCode == KeyEvent.KEYCODE_MENU || keyCode == KeyEvent.KEYCODE_PROG_RED)
+                        && event.getAction() == KeyEvent.ACTION_UP) {
+                    onOptions.run();
+                    return true;
+                }
+                return false;
+            });
+        }
         return cell;
     }
 
@@ -390,6 +440,14 @@ public class HomeActivity extends Activity {
         } catch (ActivityNotFoundException | SecurityException e) {
             Toast.makeText(this, getString(R.string.launch_failed, app.label), Toast.LENGTH_SHORT).show();
             dirty = true;
+        }
+    }
+
+    private void openInput(TvInputs.Input input) {
+        try {
+            startActivity(input.intent());
+        } catch (ActivityNotFoundException | SecurityException e) {
+            Toast.makeText(this, getString(R.string.launch_failed, input.label), Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -444,6 +502,11 @@ public class HomeActivity extends Activity {
                 refresh(null);
             });
         }
+        labels.add(getString(R.string.toggle_inputs));
+        actions.add(() -> {
+            store.toggleInputs();
+            refresh(null);
+        });
         labels.add(getString(R.string.toggle_seconds));
         actions.add(() -> {
             store.toggleSeconds();
@@ -464,7 +527,11 @@ public class HomeActivity extends Activity {
     }
 
     private void showMenu(String title, List<String> labels, List<Runnable> actions) {
-        new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Dialog_Alert)
+        // Theme_DeviceDefault_Dialog_Alert só existe a partir do Android 5.1.
+        int theme = Build.VERSION.SDK_INT >= 22
+                ? android.R.style.Theme_DeviceDefault_Dialog_Alert
+                : android.R.style.Theme_Material_Dialog_Alert;
+        new AlertDialog.Builder(this, theme)
                 .setTitle(title)
                 .setItems(labels.toArray(new String[0]), (dialog, which) -> actions.get(which).run())
                 .show();
@@ -510,6 +577,15 @@ public class HomeActivity extends Activity {
                         | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         | View.SYSTEM_UI_FLAG_FULLSCREEN);
+    }
+
+    @SuppressWarnings("deprecation")
+    private int color(int id) {
+        return Build.VERSION.SDK_INT >= 23 ? getColor(id) : getResources().getColor(id);
+    }
+
+    private Drawable getDrawableCompat(int id) {
+        return getDrawable(id);
     }
 
     private int dp(int value) {

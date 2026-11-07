@@ -1,22 +1,19 @@
 /*
- * Launcher TV para Samsung (Tizen).
- * ES5 de propósito: TVs de 2017-2019 (Tizen 3 a 5) rodam Chromium 47-63.
- * Fora da TV (num navegador comum) roda com uma lista de apps de exemplo, para testar o layout.
+ * Launcher TV para TVs com sistema web: Samsung (Tizen) e LG (webOS).
+ * Tudo o que é específico de cada marca fica em js/platform.js (veja o contrato lá).
+ * ES5 de propósito: TVs antigas rodam Chromium 38-63 (webOS 3, Tizen 3-5) ou WebKit (Tizen 2.x).
  */
 (function () {
     'use strict';
 
-    var KEY = {
-        LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, ENTER: 13,
-        BACK: 10009, ESC: 27, BACKSPACE: 8,
-        RED: 403, GREEN: 404, YELLOW: 405, BLUE: 406
-    };
+    var P = window.LauncherPlatform;
+    var KEY = { LEFT: 37, UP: 38, RIGHT: 39, DOWN: 40, ENTER: 13 };
     var LONG_PRESS_MS = 700;
     var ROW_WIDTH = 1696;       // 1920 menos as margens laterais de 112px
     var STORE = 'ltv.';
 
     // Apps de streaming que viram favoritos na primeira execução, se instalados.
-    // No Tizen os IDs mudam por região, então a busca é pelo nome.
+    // Os IDs mudam por marca e região, então a busca é pelo nome.
     var DEFAULT_FAVORITES = [/netflix/i, /youtube$/i, /prime video/i, /disney/i, /^max$|hbo/i,
         /globoplay/i, /apple tv/i, /spotify/i];
     var MAX_DEFAULT_FAVORITES = 6;
@@ -39,7 +36,8 @@
             exit: 'Sair do Launcher TV',
             launchFailed: 'Não foi possível abrir %s',
             hidden: '%s foi ocultado. Ajustes → Mostrar apps ocultos traz de volta.',
-            loadFailed: 'Não foi possível listar os apps desta TV.'
+            loadFailed: 'Não foi possível listar os apps desta TV.',
+            notInstalled: '%s não está instalado nesta TV e foi ocultado.'
         },
         en: {
             favorites: 'Favorites',
@@ -58,14 +56,15 @@
             exit: 'Exit Launcher TV',
             launchFailed: 'Could not open %s',
             hidden: '%s is hidden. Settings → Show hidden apps brings it back.',
-            loadFailed: 'Could not list the apps on this TV.'
+            loadFailed: 'Could not list the apps on this TV.',
+            notInstalled: '%s is not installed on this TV and was hidden.'
         }
     };
 
     var lang = (navigator.language || 'pt').toLowerCase().indexOf('en') === 0 ? 'en' : 'pt';
-    var hasTizen = typeof window.tizen !== 'undefined';
 
     var apps = [];              // [{id, name, icon}], ordem alfabética
+    var isCatalog = false;      // lista veio de um catálogo fixo (LG), não da TV
     var menuItems = null;       // ações do menu aberto, ou null
     var focused = null;
     var enterTimer = null;
@@ -77,7 +76,7 @@
 
     function t(key, arg) {
         var s = TEXT[lang][key];
-        return arg === undefined ? s : s.replace(/%[sd]/, arg);
+        return arg === undefined ? s : s.replace(/%[sd]/, function () { return arg; });
     }
 
     // ------------------------------------------------------------ armazenamento
@@ -118,27 +117,15 @@
 
     // ------------------------------------------------------------ lista de apps
 
-    var SAMPLE_APPS = ['Netflix', 'YouTube', 'Prime Video', 'Disney+', 'Globoplay', 'Max', 'Spotify',
-        'Apple TV', 'Plex', 'Navegador', 'Galeria', 'SmartThings', 'Twitch', 'Pluto TV', 'Deezer'];
-
     function loadApps(done) {
-        if (!hasTizen) {
-            done(SAMPLE_APPS.map(function (name, i) { return { id: 'demo.' + i, name: name, icon: '' }; }));
-            return;
-        }
-        var selfId = '';
-        try { selfId = tizen.application.getCurrentApplication().appInfo.id; } catch (e) { /* ignora */ }
         try {
-            tizen.application.getAppsInfo(function (list) {
-                var out = [];
-                list.forEach(function (a) {
-                    if (!a.show || a.id === selfId || !a.name) return;
-                    out.push({ id: a.id, name: String(a.name).trim(), icon: a.iconPath || '' });
-                });
-                done(out);
-            }, function () {
-                toast(t('loadFailed'));
-                done([]);
+            P.listApps(function (list, catalog) {
+                if (!list) {
+                    toast(t('loadFailed'));
+                    list = [];
+                }
+                isCatalog = !!catalog;
+                done(list);
             });
         } catch (e) {
             toast(t('loadFailed'));
@@ -174,13 +161,18 @@
         el.setAttribute('data-section', section);
         el.setAttribute('data-app', app.id);
 
+        var badge = document.createElement('div');
+        badge.className = 'badge';
+        badge.textContent = app.name.charAt(0).toUpperCase();
+        badge.style.backgroundColor = badgeColor(app.name);
         if (app.icon) {
+            // Ícone do sistema; se não carregar, fica a inicial colorida.
             var img = document.createElement('img');
-            img.src = app.icon;
             img.alt = '';
-            img.onerror = function () { img.parentNode && img.parentNode.removeChild(img); };
-            el.appendChild(img);
+            img.onload = function () { if (badge.parentNode) badge.parentNode.replaceChild(img, badge); };
+            img.src = app.icon;
         }
+        el.appendChild(badge);
         var name = document.createElement('div');
         name.className = 'name';
         name.textContent = app.name;
@@ -205,6 +197,13 @@
 
         var target = focusKey && document.querySelector('[data-key="' + cssEscape(focusKey) + '"]');
         setFocus(target || firstTile());
+    }
+
+    /** Uma cor estável por nome, para a inicial dos apps sem ícone. */
+    function badgeColor(name) {
+        var h = 0;
+        for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
+        return 'hsl(' + h + ', 45%, 42%)';
     }
 
     function cssEscape(s) { return String(s).replace(/["\\]/g, '\\$&'); }
@@ -291,12 +290,26 @@
 
     function launch(app) {
         if (!app) return;
-        if (!hasTizen) { toast('▶ ' + app.name); return; }
         try {
-            tizen.application.launch(app.id, null, function () { toast(t('launchFailed', app.name)); });
+            P.launch(app, function () {
+                if (isCatalog) {
+                    // Catálogo (LG): se não abriu, o app não está instalado. Sai da tela.
+                    hideApp(app);
+                    toast(t('notInstalled', app.name));
+                    render(null);
+                } else {
+                    toast(t('launchFailed', app.name));
+                }
+            });
         } catch (e) {
             toast(t('launchFailed', app.name));
         }
+    }
+
+    function hideApp(app) {
+        var h = hiddenIds();
+        if (!contains(h, app.id)) h.push(app.id);
+        save('hidden', h);
     }
 
     function showAppOptions(el) {
@@ -324,9 +337,7 @@
             } });
         }
         items.push({ label: t('hide'), run: function () {
-            var h = hiddenIds();
-            if (!contains(h, app.id)) h.push(app.id);
-            save('hidden', h);
+            hideApp(app);
             toast(t('hidden', app.name));
             render(null);
         } });
@@ -361,7 +372,7 @@
             seedFavorites();
             render(null);
         } });
-        if (hasTizen) items.push({ label: t('exit'), run: exitApp });
+        if (P.exit) items.push({ label: t('exit'), run: exitApp });
         openMenu(t('settings'), items);
     }
 
@@ -391,7 +402,7 @@
     }
 
     function exitApp() {
-        try { tizen.application.getCurrentApplication().exit(); } catch (e) { /* fora da TV */ }
+        try { if (P.exit) P.exit(); } catch (e) { /* nada a fazer */ }
     }
 
     function back() {
@@ -410,35 +421,31 @@
 
     // ------------------------------------------------------------ teclas
 
+    function is(list, code) { return list && list.indexOf(code) >= 0; }
+
     function onKeyDown(e) {
-        switch (e.keyCode) {
-            case KEY.LEFT: move('left'); break;
-            case KEY.RIGHT: move('right'); break;
-            case KEY.UP: move('up'); break;
-            case KEY.DOWN: move('down'); break;
-            case KEY.ENTER:
-                // Segurar OK abre as opções do app; um toque rápido abre o app.
-                if (!enterDown) {
-                    enterDown = true;
-                    enterLongFired = false;
-                    var target = focused;
-                    enterTimer = setTimeout(function () {
-                        if (!menuItems && target && target.getAttribute('data-app')) {
-                            enterLongFired = true;
-                            showAppOptions(target);
-                        }
-                    }, LONG_PRESS_MS);
-                }
-                break;
-            case KEY.BACK: case KEY.ESC: case KEY.BACKSPACE: back(); break;
-            case KEY.RED: case 77 /* M, no navegador */:
-                if (!menuItems) showAppOptions(focused);
-                break;
-            case KEY.GREEN: case 83 /* S, no navegador */:
-                if (!menuItems) showSettings();
-                break;
-            default: return;
-        }
+        var c = e.keyCode;
+        if (c === KEY.LEFT) move('left');
+        else if (c === KEY.RIGHT) move('right');
+        else if (c === KEY.UP) move('up');
+        else if (c === KEY.DOWN) move('down');
+        else if (c === KEY.ENTER) {
+            // Segurar OK abre as opções do app; um toque rápido abre o app.
+            if (!enterDown) {
+                enterDown = true;
+                enterLongFired = false;
+                var target = focused;
+                enterTimer = setTimeout(function () {
+                    if (!menuItems && target && target.getAttribute('data-app')) {
+                        enterLongFired = true;
+                        showAppOptions(target);
+                    }
+                }, LONG_PRESS_MS);
+            }
+        } else if (is(P.keys.back, c)) back();
+        else if (is(P.keys.red, c)) { if (!menuItems) showAppOptions(focused); }
+        else if (is(P.keys.green, c)) { if (!menuItems) showSettings(); }
+        else return;
         e.preventDefault();
     }
 
@@ -450,13 +457,6 @@
         enterLongFired = false;
         if (!wasLong) activate(focused);
         e.preventDefault();
-    }
-
-    function registerKeys() {
-        if (!hasTizen || !tizen.tvinputdevice) return;
-        ['ColorF0Red', 'ColorF1Green'].forEach(function (k) {
-            try { tizen.tvinputdevice.registerKey(k); } catch (e) { /* tecla indisponível */ }
-        });
     }
 
     // ------------------------------------------------------------ relógio
@@ -485,7 +485,7 @@
         for (var i = 0; i < labels.length; i++) labels[i].textContent = t(labels[i].getAttribute('data-i18n'));
         $('settings').setAttribute('aria-label', t('settings'));
 
-        registerKeys();
+        P.init();
         document.addEventListener('keydown', onKeyDown);
         document.addEventListener('keyup', onKeyUp);
         // Ao voltar de outro app, relê a lista (algo pode ter sido instalado ou removido).

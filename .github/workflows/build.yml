@@ -17,11 +17,17 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       # O runner do GitHub já vem com o Android SDK (ANDROID_HOME).
       - run: ./gradlew --no-daemon assembleRelease
-      - run: bash -n tools/tv.sh && bash -n tizen/build.sh
-      # Versão Tizen: o JS precisa ser ES5 (TVs Samsung antigas usam Chromium 47).
-      - run: npx --yes acorn@8.14.0 --ecma5 --silent tizen/js/main.js
-      - run: python3 -c "import xml.dom.minidom as m; m.parse('tizen/config.xml')"
+      - run: bash -n tools/tv.sh && bash -n tizen/build.sh && bash -n webos/build.sh
+      # Samsung e LG: o JS precisa ser ES5 (TVs antigas usam Chromium 38-56).
+      - run: for f in web/js/*.js tizen/platform.js webos/platform.js; do npx --yes acorn@8.14.0 --ecma5 --silent "$f"; done
+      - run: python3 -c "import xml.dom.minidom as m, json; m.parse('tizen/config.xml'); json.load(open('webos/appinfo.json'))"
+      # LG: o .ipk não precisa de assinatura, então sai pronto do CI.
+      - run: npm install -g @webos-tools/cli@3 && ./webos/build.sh package
       - uses: actions/upload-artifact@v4
         with:
           name: launcher-tv-apk
           path: app/build/outputs/apk/release/app-release.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: launcher-tv-webos
+          path: webos/build/*.ipk
