@@ -4,6 +4,8 @@ Versão do Launcher TV para TVs Samsung com Tizen OS (2015 em diante): relógio,
 favoritos e todos os apps da TV numa grade, navegável pelo controle. A interface é a mesma da
 versão LG (pasta [`web/`](../web)); só o adaptador [`platform.js`](platform.js) é da Samsung.
 
+![Launcher TV: relógio, favoritos e todos os apps](../docs/screenshots/home.jpg)
+
 > **Diferença importante para o Android:** a Samsung não permite trocar a tela inicial (Smart Hub)
 > nem desativar apps de fábrica. Aqui o Launcher TV é **um app que você abre** pela barra de apps.
 > Dica: fixe-o na primeira posição da barra (Apps → segure OK no Launcher TV → Mover).

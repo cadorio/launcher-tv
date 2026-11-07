@@ -4,6 +4,8 @@ Versão do Launcher TV para TVs LG com webOS (2014 em diante): relógio, favorit
 de apps e entradas (HDMI), navegável pelo controle. A interface é a mesma da versão Samsung
 (pasta [`web/`](../web)); só o adaptador [`platform.js`](platform.js) é da LG.
 
+![Launcher TV: relógio, favoritos e todos os apps](../docs/screenshots/home.jpg)
+
 > **Como na Samsung, a LG não deixa trocar a tela inicial** nem desativar apps do sistema.
 > O Launcher TV é um app que você abre pela barra de apps (dá para movê-lo para o começo dela).
 

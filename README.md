@@ -1,5 +1,7 @@
 # Launcher TV
 
+![Tela inicial do Launcher TV: relógio, fileira de favoritos e grade com todos os apps](docs/screenshots/home.jpg)
+
 Uma tela inicial limpa para qualquer **Android TV / Google TV**, sem anúncios e sem fileiras de
 “recomendações”, mais um script que desativa o lixo pré-instalado pela rede (Wi-Fi), via ADB.
 
@@ -18,6 +20,16 @@ Uma tela inicial limpa para qualquer **Android TV / Google TV**, sem anúncios e
 
 Inspirado no projeto [cleanyourtv](https://github.com/Gathin23/cleanyourtv) (MIT); o código
 daqui foi escrito do zero.
+
+## Fotos
+
+| Todos os apps | Opções de um app (segurar OK) | Ajustes (botão verde) |
+|---|---|---|
+| ![Grade com todos os apps e o item em foco ampliado](docs/screenshots/apps.jpg) | ![Menu com mover, remover dos favoritos e ocultar](docs/screenshots/options.jpg) | ![Menu de ajustes do launcher](docs/screenshots/settings.jpg) |
+
+<sub>Capturas da versão Samsung/LG rodando no navegador em modo demonstração (por isso os apps
+aparecem com a inicial no lugar do ícone). Na TV aparecem os ícones reais; no Android, os banners
+dos apps e a fileira "Entradas".</sub>
 
 ## O que vem no launcher
 
